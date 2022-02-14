@@ -46,36 +46,45 @@ router
   })
 
   .post((req, res) => {
-
     const username = req.body.username;
     const password = req.body.password;
-      if(!username || !password){
-        res.render("signup", { errorMessage: "All fields must be provided"})
-        throw new Error("Validation Error")
-      }
+    if (!username || !password) {
+      res.render("signup", { errorMessage: "All fields must be provided" });
+      throw new Error("Validation Error");
+    }
 
-      User.findOne({username})
+    User.findOne({ username })
       .then((user) => {
-        if(!user) {
-          res.render("login", { errorMessage: "Incorrect Credentials"})
-          throw new Error("Validation Error")
+        if (!user) {
+          res.render("login", { errorMessage: "Incorrect Credentials" });
+          throw new Error("Validation Error");
         }
-        const isPwdCorrect = bcrypt.compareSync(password, user.password)
-        if(isPwdCorrect){
-       //   res.redirect("profile")
-       res.render("login", { errorMessage: "Login Success"})
-       
-        }else{
-          res.render("login", { errorMessage: "Incorrect Credentials"})
+        const isPwdCorrect = bcrypt.compareSync(password, user.password);
+        if (isPwdCorrect) {
+          req.session.currentUserId = user._id; // SEND THE COOKIE BACK TO THE BROWSER
+          res.redirect("/auth/profile");
+          // res.render("login", { errorMessage: "Login Success"})
+        } else {
+          res.render("login", { errorMessage: "Incorrect Credentials" });
         }
-      }).catch((err) => {console.log(err)})
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   });
 
-
-
-
 router.get("/profile", (req, res) => {
-  res.render("profile");
+  const id = req.session.currentUserId;
+  User.findById(id).then((user) => {
+    res.render("profile", user)
+  });
 });
+
+
+
+router.get("/logout", () => req.session.destroy(()=>{
+  res.redirect("/")
+})); // CLOSE SESSION
+
 
 module.exports = router;
