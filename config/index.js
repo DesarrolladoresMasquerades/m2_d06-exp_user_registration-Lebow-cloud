@@ -12,20 +12,18 @@ module.exports = (app) => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use(
-    session({
-      secret: process.env.COOKIE_SECRET, // for example: cappuccinski
-      cookie: {
-        maxAge: 24 * 60 * 60 * 1000, // One day long
-        saveUninitialized: false,
-        resave: false,
-        store: MongoStore.create({
-          mongoUrl: process.env.MONGODB_URI, // || "mongodb://localhost/cookies",
-          ttl: 24*60*60
-        })
-      }
-    })
-  )
+  app.use(session({
+    secret: process.env.COOKIE_SECRET,
+    saveUninitialized: false,
+    resave: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      ttl: 24 * 60 * 60
+    }),
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000, //one day old
+    }
+  }))
   app.set("views", path.join(__dirname, "..", "views"));
   app.set("view engine", "hbs");
   app.use(express.static(path.join(__dirname, "..", "public")));
